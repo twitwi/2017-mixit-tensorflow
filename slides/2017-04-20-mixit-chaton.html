@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+            
+        <title>Deep Learning pour la Reconnaissance de Chatons</title>
+
+        <meta name="author" content="Rémi Emonet">
+        <meta name="venue" content="MiXiT 2017">
+        <meta name="date" content="2017-04-20">
+
+        <style>
+            .custommap>div {height: 400px; float: left;}
+            pre.dense { padding: 0;}
+        </style>
+        
+	<script src="deck-packed.js"></script>
+        <script>
+            var cssAndJs = ["light-red-dense.css", "mixit.css"];
+            var options = {
+                AFTERINIT: function() {
+                    $(".hasSVG, .hasFS").each(function(i, e) {
+                        $(e).click(function() {
+                            $(e).toggleClass('FS');
+                        });
+                    });
+                },
+                AFTERSMARTDOWN: function() {
+                    $(".libyli>ul>li:not(.noslide):nth-of-type(n+2)").addClass("slide");
+                }
+            };
+            includedeck(cssAndJs, options);
+        </script>
+    </head>
+    <body>
+        <div class="deck-container">
+
+            <!-- splash screen when loading -->
+            <div class="deck-loading-splash" style="background: black; color: chartreuse;">
+                <span class="vcenter" style="font-size: 30px; font-family: Arial; ">Please wait, while the deck is loading…</span>
+            </div>
+
+
+            <!-- --------------------------- -->
+            <!-- slides in extended markdown -->
+            <section class="smart">
+
+
+
+
+# <span class="var-title-br"></span> {/no-status /keep-logo title-slide} // comment
+- <span class="var-author"></span>
+- <span class="var-date"></span>
+
+## Meta {libyli}
+- `$ whoami`
+- Déroulement du workshop // disclaimer: non-exhaustive
+  - « cours »
+  - pratique dans un « notebook » Jupyter
+- Ressources
+  - slides et notebooks <a href="https://github.com/twitwi/2017-mixit-tensorflow" target="_blank">github.com/twitwi/2017-mixit-tensorflow</a>
+  - site <a href="https://www.tensorflow.org/" target="_blank">Tensorflow</a>
+- Attributions
+  - wikipedia
+  - [creative commons et autres media](#attrib)
+
+## Menu du jour {#the-overview}
+- Apprentissage automatique {ml}
+- Frameworks et Graphes de Calculs {tfgraph}
+- Combinaison linéaire, Perceptron, Activation {percep}
+- Optimisation et Descente de Gradient (ou autre) {optim}
+- Perceptron Multicouches, Apprentissage Profond {deep}
+- Convolutions et Deep Learning {convnet}
+- Sur les Épaules des Géants {pretrain}
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .ml
+
+# Machine Learning <br/> Apprentissage Automatique
+<!-- 
+vs des ifs et coefs à la main
+
+les bases en scikit, pour expliquer
+- regression vs classif, one-hot
+- schemas 1D, pratique 2D digits
+- train, test
+  -->
+
+## Question : Quelle espèce d'Iris ? {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/iris.jpg')" data-attribution="https://www.flickr.com/photos/asa-moya/3722175717/sizes/l" data-attribution-content="CC by Asa-moya (Flickr)" data-scale="">
+</div>
+- {notes}
+  - you have to write a program or human procedure
+  - that receives a flower
+  - that should tell it's species among 3 possible ones (close ones)
+
+## Extraction de Caractéristiques {custommap}
+<div class="c6" style="background-size: contain; background-image: url('media/iris.jpg'); background-position: center center; background-repeat:no-repeat"></div>
+<div class="c1" style="line-height: 400px; text-align: center;">&rArr;</div>
+<div class="c5" style="padding-top: 150px; font-size: 72%;"><pre>Sepal length: 5.1
+Sepal width: 2.5
+Petal length: 4.2
+Petal width: 1.0
+</pre>
+    Expected Label: “Iris Setosa”
+</div>
+
+## Analyse et Écriture de Programme {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/iris-correlations.jpg')" >
+</div>
+- {notes}
+  - looking at feature
+  - starting to write the program
+  - using "if" etc
+
+## IFTTT... {image-full top-right darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/tree-sunset.jpg')" data-attribution="https://www.flickr.com/photos/porsupah/7030632775/sizes/o/" data-attribution-content="CC by -Porsupah- (Flickr)" data-scale="">
+</div>
+- {notes}
+  - a lot of if
+  - a simple case
+  - actually: more features, more classes, more intricated
+
+## Machine Learning Prédictif
+- Au lieu d'écrire un programme pour résoudre une tâche,
+- Nous allons {slide}
+    1. collecter des données annotées : *paires entrée/sortie*
+    2. générer automatiquement un programme <br/>qui calcule la *sortie* pour n'importe quelle *entrée* {step2}
+    3. « profit! » {slide} // actually fast to apply usually
+    2. @anim: .step2
+
+La machine *apprend* à *généraliser* <br/> à partir d'un nombre limité d'exemples, <br/> à la manière des humains. {center slide bordered}
+
+
+## Différentes Tâches
+- Apprentissage supervisé : des annotations sont données {slide}
+  - classification : trouver l'étiquette (classe, ...) d'un exemple
+  - régression : trouver une valeur cible (âge, prix, poids, ...)
+- Apprentissage non-supervisé : pas d'annotations {slide}
+  - clustering : grouper les choses
+  - pattern mining : trouver des structures récurrentes
+  - détection d'anomalie: trouver des valeurs « aberrantes »
+
+
+
+
+
+## Notations
+- En général :
+  - $X$ : entrée (caractéristiques)
+  - $Y$ : sortie (valeur ou classe)
+  - $w$ : poids, paramètres qui seront appris
+  - $b$ : biais, paramètres qui seront appris
+  - $\theta$ : ensemble des paramètres ($w$, $b$, ...)
+- Ensembles de données // cf slide suivant
+  - $train$ : ensemble d'apprentissage (pour entraîner le système)
+  - $valid$ : ensemble de validation (pour éviter le sur-apprentissage)
+  - $test$ : ensemble de test (pour évaluer le système)
+
+## Le « sur-apprentissage »
+@svg: media/overfitting.svg 800px 500px
+
+- @anim: #points | #linear | #piecewise | #ok
+- {notes}
+  - example: surface of a flat vs price
+  - in the end, there is no best solution
+
+
+# Régression et Classification <br/> avec Scikit Learn **01** {pratique}
+
+
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .tfgraph
+
+# Frameworks, <br/> Graphes de Calculs
+
+## Frameworks de Machine Learning {libyli}
+- Généraux
+  - scikit-learn
+  - Weka
+  - Hadoop, spark, MLlib, …
+  - …
+- Orientés « deep learning »
+  - Theano, Pylearn2, lasagne, … // Montréal
+  - caffe // berkeley
+  - Torch7 // F.A.I.R.
+  - Tensorflow // Google (nov 2015)
+  - Keras // wrapper over theano or tensorflow
+  - MXnet // open community
+  - …
+
+## Graphes de Calculs
+- Calculs « classiques » (numpy, etc.)
+```python
+N = 1000 # nombre de points
+D = 10 # nombre de caractéristiques
+
+x = np.random.randn(N, D) # données au hasard...
+w = np.random.randn(D)    # poids au hasard
+b = np.random.randn(1)    # biais au hasard
+
+# opérations élément par élément, avec <a href="https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html" target="_blank">broadcasting</a>
+ypred = np.sum(w*x, axis=1) + b
+{dense slide}
+```
+- Graphes de calcul (theano, tensorflow, etc.)
+```python
+x = tf.placeholder(tf.float32, shape=[None, D])        # entréees
+w = tf.Variable(tf.truncated_normal([D], stddev=0.05)) # poids
+b = tf.Variable(tf.constant(0.05, shape=[1]))          # biais
+
+# opérations élément par élément, avec <a href="https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html" target="_blank">broadcasting</a>
+ypred = tf.reduce_sum(x * w, axis=1) + b
+{dense slide}
+```
+<!--
+d = (y - ypred)**2
+
+y = np.random.randn(N)    # sortie 1D
+print(x.shape, ypred.shape, d.shape, np.sum(d))
+
+y = tf.placeholder(tf.float32, shape=[None])           # sorties
+d = (y - ypred) ** 2
+
+print(x.shape, ypred.shape, d.shape, tf.reduce_sum(d))
+  -->
+
+## Graphe de calcul en Tensorflow
+```python
+x = tf.placeholder(tf.float32, shape=[None, D])        # entréees
+w = tf.Variable(tf.truncated_normal([D], stddev=0.05)) # poids
+b = tf.Variable(tf.constant(0.05, shape=[1]))          # biais
+
+# opérations élément par élément, avec <a href="https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html" target="_blank">broadcasting</a>
+ypred = tf.reduce_sum(x * w, axis=1) + b
+{dense}
+```
+- Le code ne fait que créer un graphe symbolique
+- @anim: - #y,#subsquared,#reduceprint,#intermediate + .grr +
+- @anim: #x | #w, #b | #mul | #sumadd | #ypred
+- *@svg: media/compute-graph.svg 800 230 {grr}* {no}
+- Évaluation du graphe {slide}
+```python
+X = np.random.randn(N, D)  # données au hasard...
+with tf.Session() as sess:
+    res = sess.run(ypred, feed_dict={ x: X })  # calcule "ypred" sachant que "x" vaut "X"
+    print(res)
+{dense slide}
+```
+
+<!--
+  - « placeholder » : donnée qui doit être rempli plus tard
+  - dimension de « None » : la dimension sera connue plus tard
+  - « variable » : quelque chose qui a une valeur et pourra être optimisé
+-->
+
+## Utilisation d'un graphe Tensorflow {pratique nobg}
+- @anim: #x,#w,#b,#mul,#sumadd,#ypred
+
+@svg: media/compute-graph.svg 800 230 {grr whitebg no}
+
+- $err = \sum_i (y^i - y_{pred}^i)^2$ {slide}
+- @anim: #y | #subsquared | #reduceprint | #intermediate
+- À vous ! **02** {slide}
+  - calcul de l'erreur totale
+  - évaluation du graphe
+  - vérification des tailles (shape)
+
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .percep
+
+# Combinaison linéaire, Perceptron, Activation
+
+## Perceptron et fonction d'activation // à la base une machine physique
+<div class="c5 bgfit iblock" style="height: 350px; background-image: url('media/wikipedia/Perceptron-unit.svg')"></div>
+<div class="c6 floatright center dense slide" style="border: 1px solid lightgrey; border-width: 0 0 1px 1px;">
+    <div class="bgfit slide" style="height: 100px; background-image: url('media/wikipedia/Activation_binary_step.svg')"></div>
+    $\varphi$ « marche »<hr/>
+    <div class="bgfit slide" style="height: 100px; background-image: url('media/wikipedia/Activation_tanh.svg')"></div>
+    $\varphi$ « en S »<hr/>
+    <div class="bgfit slide" style="height: 100px; background-image: url('media/wikipedia/Activation_rectified_linear.svg')"></div>
+    $\varphi$ « ReLU » (la plus utilisée)
+</div>
+
+- $o = \varphi\left(\sum_{i=0}^n w_i x_i\right)$     (avec $x_0 = 1$) {dense}
+- vu autrement : <br/><br/> « $o = seuil(a.x + b) = seuil(w_1 x_1 + w_2 x_2 + \cdots + b)$ »{dense}
+
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .optim
+
+# Optimisation, <br/> Descente de Gradient
+
+## Apprentissage = Optimisation {libyli}
+- $o = f(x, w)$
+  - $x, y$ est un exemple d'entrainement
+  - $o$ est la sortie obtenue, avec les paramètres $w$
+- Objectif de l'apprentissage
+  - à partir d'exemples annotés, $x$ et $y$ correspondant
+  - minimiser la somme des erreurs $err(y, o) = dist(y, f(x, w))$
+  - **trouver les meilleurs paramètres $w$**
+    <br/> *(NB: attention quand même au sur-apprentissage) {dense}*
+
+@svg: media/gradient-empty.svg 800 180 {grad}
+
+@anim: .grad
+
+## Descente de Gradient *(suivre la pente){dense}*
+<div>
+<div class="iblock">@svg: media/gradient.svg 390 250 {grad}</div>
+<div class="iblock floatright">@svg: media/wikipedia/Gradient_descent.svg 300 250 {grad2d}</div>
+<br/>
+<div class="iblock c1"> </div>
+<div class="iblock c4 opt1"><img src="media/saddle_point_evaluation_optimizers.gif"/></div>
+<div class="iblock c2"> </div>
+<div class="iblock c4 opt2"><img src="media/contours_evaluation_optimizers.gif"/></div>
+</div>
+- « <a href="http://sebastianruder.com/optimizing-gradient-descent/index.html#whichoptimizertouse" target="_blank">which optimizer to use?</a> » {ref dense}
+- @anim: .grad 
+- @anim: #cat | #w0 | #j1, #w1 | #j2, #w2 | #j3, #w3 | #j4, #w4 | #j5, #w5 + #j6, #w6
+- @anim: .grad2d | .ref | .opt1 | .opt2
+
+# Optimiseur en Tensorflow <br/> (plus tard) {pratique}
+
+
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .deep
+
+# Perceptron Multicouches, <br/> *Deep Learning*, <br/> Apprentissage de Représentation
+
+## Perceptron Multicouches
+@svg: media/mlp.svg 800 450
+
+- $o = \varphi(W^4 \times \varphi(W^3 \times \varphi(W^2 \times \varphi(W^1 \times X))))$ {eqs}
+- @anim: #percep | #per1 | #per2 | #per3 | #one2 | #l3 | #one3,#l4 | #one4,#o | .eqs
+
+
+## Apprentissage de Représentation
+@svg: media/mlp-long.svg 800 150
+
+- Deep Learning / Representation Learning {libyli}
+  - au lieu 
+       - d'extraire des caractéristiques « à la main »
+       - d'apprendre le classifieur
+  - on va
+       - donner à l'algorithme l'entrée brute (ex: les pixels)
+       - laisser l'algorithme trouver les caractéristiques pertinentes
+       - apprendre de bout en bout
+  - il faut avoir compris son problème (architecture), et avoir
+       - des données
+       - de la puissance de calcul (CPU, GPU)
+       - un framework (optimiseur, dérivation, …)
+       - des fonctions dérivables pour le <a href="https://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_d%C3%A9rivation_des_fonctions_compos%C3%A9es" target="_blank">gradient de la composition</a> : $(f \circ g)'(x) = f'(g(x)) . f(g'(x))$
+
+# Un MLP en Tensorflow **03** {pratique}
+// combien de paramètres
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .convnet
+
+# Convolutions et Deep Learning
+
+## Particularité des images {libyli}
+- Exemple : ségmentation sémantique
+  - pour chaque pixel, une des 30 classes
+  - entrée/sortie en 2000x1000 = 2MPixels = 2 million de dimensions
+- @anim: %+class:FS:video | %play:video | %pause:video | %-class:FS:video
+- Perceptron simple couche
+  - nombre de paramètres ?
+- Malédiction de la dimension
+  - explosion du nombre de paramètres
+  - apprentissage impossible
+  - risque de sur-apprentissage
+- <video height="180" style="float:right" src="media/Stuttgart_00.webm" onclick="this.paused ? this.play() : this.pause()" controls="true"></video> {no noslide}
+- Particularité des images
+  - invariance en translation
+  - dépendances locales
+
+## Convolutions et Couche de Convolution {libyli}
+- Convolution
+  - opération entre 2 fonctions : $(f * g )(t) = \int_{-\infty}^{\infty} f(\tau) g(t - \tau) d\tau {dense}$ 
+  - application d'un <a href="https://en.wikipedia.org/wiki/Kernel_(image_processing)" target="_blank">filtre</a> à une image (comme dans Photoshop / gimp)
+  - corrélation entre un motif et une image, <a href="interactive-convolution/index.html" target="_blank">essayer</a>
+- Couche de convolution : on apprends les filtres !
+  - entrée : $k$ « feature maps » (ex, les 3 canaux d'une image couleur)
+  - sortie : $l$ « features maps » de même taille (ex, image filtrée)
+  - paramètres, dans le cas de filtres $3\times 3$
+    <img class="floatright" width="200px" src="media/wikipedia/Conv_layer.png"></img>
+      - nombre filtres : $k.l$ &rArr; $9.k.l$ (poids)
+      - nombres de biais : $l$ &rArr; $l$ paramètres en plus
+      - @anim: .typical
+
+<img class="typical" src="media/wikipedia/Typical_cnn.png" height="150"></img>
+
+# Un « Convnet » en Tensorflow **04** {pratique}
+
+## Comprendre ce qui est Appris
+- Travail à la maison
+  - reconnaissance de chiffres
+      - <a href="http://scs.ryerson.ca/~aharley/vis/" target="_blank">http://scs.ryerson.ca/~aharley/vis/</a>
+      - <a href="http://scs.ryerson.ca/~aharley/vis/conv/" target="_blank">http://scs.ryerson.ca/~aharley/vis/conv/</a>
+  - deepvis
+      - <a href="http://yosinski.com/deepvis" target="_blank">http://yosinski.com/deepvis</a>
+      - <a href="https://www.youtube.com/watch?v=AgkfIQ4IGaM" target="_blank">https://www.youtube.com/watch?v=AgkfIQ4IGaM</a>
+
+<div>
+<img src="media/cite/convnet_flat_480.png" class="c7 iblock"></img>
+<img src="media/cite/deepvis_freckles.jpg" class="c4 iblock"></img>
+</div>
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview: %+class:HERE: .pretrain
+
+# Sur les Épaules des Géants
+
+## Les réseaux d'aujourd'hui {libyli}
+- <img class="floatright" height="500" src="media/cite/rotate--inception_v3_architecture.jpg"></img> {no}
+- Architectures
+  - réseaux convolutionnels
+  - parfois un MLP à la fin
+  - de ~ 20 à 1000 couches
+  - millions de paramètres
+  - des fermes de GPU (carte graphiques) à 1500€
+  - des semaines d'entraînement (sur <a href="http://www.image-net.org/synset?wnid=n02122948" target="_blank">ImageNet</a>)
+- Éléments
+  - convolutions $3\times 3$ et $1\times 1$
+  - activation ReLU
+  - max-pooling
+  - dropout
+  - batch-normalization
+  - connections résiduelles
+- Optimiseur : Adam, rmsprop, SGD
+
+
+
+## Réutilisation des réseaux {libyli}
+- Step 1 : récupérer le code &rArr; github
+- Step 2 : récupérer le modèle (les poids appris) &rArr; github
+- Step 3 : le code, selon les cas :
+  - utiliser le modèle tel quel
+  - le « fine-tuner » sur nos données
+  - utiliser le modèle pour extraire des caractéristiques
+  - faire de « l'adaptation de domaine »
+- Extraction de caractéristiques
+  - charger le modèle
+  - couper les dernières couches (spécifiques)
+  - utiliser les activations comme caractéristiques
+
+# Classification et Extraction de Caractéristiques avec le Réseau InceptionV3 **05** {pratique}
+
+
+<!-- ###################################################
+     ###################################################
+     ################################################### -->
+# @copy: #the-overview
+
+# Conclusion
+
+# Merci de votre participation ! {/no-status /keep-logo title-slide deck-status-fake-end}
+- <span class="var-title-br"></span>
+- <span class="var-author"></span>
+- <a href="http://home.heeere.com/" target="_blank">http://home.heeere.com/</a> {dense}
+- twitter: <a href="https://twitter.com/remiemonet" target="_blank">@remiemonet</a> {dense}
+
+
+# Attributions {#attrib}
+
+## -Porsupah- {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/tree-sunset.jpg')" data-attribution="https://www.flickr.com/photos/porsupah/7030632775/sizes/o/" data-attribution-content="CC by -Porsupah- (Flickr)" data-scale="">
+</div>
+
+## Asa-moya {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/iris.jpg')" data-attribution="https://www.flickr.com/photos/asa-moya/3722175717/sizes/l" data-attribution-content="CC by Asa-moya (Flickr)" data-scale="">
+</div>
+
+## Chris R McFarland {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/craft-tools.jpg')" data-attribution="https://www.flickr.com/photos/kd4pwh/5980242616/sizes/l" data-attribution-content="CC by Chris R McFarland (Flickr)" data-scale="">
+</div>
+
+## startup_mena {image-full bottom-left darkened /black-bg /no-status}
+<div class="img" style="background-image: url('media/postits.jpg')" data-attribution="https://www.flickr.com/photos/123943225@N07/22070095469/sizes/l" data-attribution-content="CC by startup_mena (Flickr)" data-scale="">
+</div>
+
+## Post: <a href="http://sebastianruder.com/optimizing-gradient-descent/index.html#whichoptimizertouse" target="_blank">which optimizer to use?</a>
+<div>
+<div class="iblock c1"> </div>
+<div class="iblock c4 opt1"><img src="media/saddle_point_evaluation_optimizers.gif"/></div>
+<div class="iblock c2"> </div>
+<div class="iblock c4 opt2"><img src="media/contours_evaluation_optimizers.gif"/></div>
+</div>
+
+## Wikipedia
+- Pour toutes les images se trouvant dans le sous-dossier `wikipedia`
+
+
+## supplementary slides
+
+##  END image {/no-status /blackbg image-full bottom-right darkened no-print}
+
+
+            </section>
+
+            <!-- footer and other decorations -->
+            <p class="deck-status deck-progress-10">
+                <span class="deck-status-current"></span> / <span class="deck-status-total"></span> − <span class="var-author">automatically replaced by the author</span> − <span class="var-title">automatically replaced by the title</span>
+            </p>
+            <a class="mixit" data-progress-size=": spe.top(15, 0); height: 50*designRatio; right: slide.left; width: 50*designRatio" href="https://mixitconf.org/" target="_blank"></a>
+
+
+        </div>
+    </body>
+
+</html>
