@@ -2,7 +2,7 @@
 
 # 2017-mixit-tensorflow
 
-Workshop du 20 avril.
+Workshop du 20 avril 2017 : « Deep Learning pour la Reconnaissance de Chatons ».
 
 Sur github : <https://github.com/twitwi/2017-mixit-tensorflow>
 
