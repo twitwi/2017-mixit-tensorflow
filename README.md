@@ -4,6 +4,8 @@
 
 Workshop du 20 avril.
 
+Sur github : <https://github.com/twitwi/2017-mixit-tensorflow>
+
 ### Il est recommandé de :
 - installer [Tensorflow](https://www.tensorflow.org/install/) (et Python3 avec anaconda)
 - cloner cette répository avec <br/> `git clone https://github.com/twitwi/2017-mixit-tensorflow.git`
